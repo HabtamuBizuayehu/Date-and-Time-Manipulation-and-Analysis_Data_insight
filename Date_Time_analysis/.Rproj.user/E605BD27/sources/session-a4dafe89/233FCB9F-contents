@@ -1,0 +1,1631 @@
+
+
+
+# ------------------------ Dashboards with Flexdashboard form Data camp ------------------------
+
+---
+title: "Bikeshare"
+output: 
+  flexdashboard::flex_dashboard
+---
+
+
+  
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+```
+
+```{r load_data, include = FALSE}
+trips_df <- read_csv('https://assets.datacamp.com/production/course_5875/datasets/sanfran_bikeshare_joined_oneday.csv')
+```
+
+
+
+Column
+-----------------------------------------------------------------------
+  
+### Chart A
+  
+```{r}
+
+```
+
+Column
+-----------------------------------------------------------------------
+  
+### Chart B
+  
+```{r plot1}
+
+trips_df %>%
+  mutate(Hour = hour(start_date)) %>%
+  group_by(Hour) %>%
+  summarize(`Trips Started` = n()) %>%
+  ggplot(aes(x = Hour, y = `Trips Started`)) +
+  theme_bw() +
+  geom_bar(stat = 'identity')
+
+```
+
+### Chart C
+
+```{r}
+
+```
+
+
+# presenting via pages 
+
+---
+title: "Bikeshare"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+Overview
+=====================================
+
+Column
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+
+```
+
+Column
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+
+```
+
+### Chart C
+
+```{r}
+
+```
+
+Details
+=====================================
+
+### Chart AA
+
+```{r}
+
+```
+
+
+# ------------------------Graphs and plots flexdashboard --------------------------
+
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(lubridate)
+library(ggplot2)
+library(tidyverse)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6355/datasets/sanfran_bikeshare_joined_oneday.csv')
+```
+
+
+Overview
+===================================== 
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Origins
+
+```{r}
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+
+### Trips by Start Time
+
+
+### Trip Durations
+
+
+```{r static_plot}
+
+trips_df %>%
+  mutate(`Trip Duration (min)` = duration_sec / 60) %>%
+  filter(`Trip Duration (min)` <= 60) %>%
+  ggplot(aes(x = `Trip Duration (min)`)) +
+  theme_bw() +
+  geom_histogram(binwidth = 1) +
+  ylab('# Trips')
+
+```
+
+
+
+# ------------- Web-friendly visualizations -----------------------------------------
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(lubridate)
+library(ggplot2)
+library(tidyverse)
+library(plotly)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6355/datasets/sanfran_bikeshare_joined_oneday.csv')
+```
+
+
+Overview
+===================================== 
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Origins
+
+```{r}
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+
+### Trips by Start Time
+
+
+### Trip Durations
+
+```{r}
+
+duration_gg <- trips_df %>%
+  mutate(`Trip Duration (min)` = duration_sec / 60) %>%
+  filter(`Trip Duration (min)` <= 60) %>%
+  ggplot(aes(x = `Trip Duration (min)`)) +
+  theme_bw() +
+  geom_histogram(binwidth = 1) +
+  ylab('# Trips')
+
+ggplotly(duration_gg)
+
+```
+
+
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(lubridate)
+library(ggplot2)
+library(tidyverse)
+library(plotly)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6355/datasets/sanfran_bikeshare_joined_oneday.csv')
+```
+
+
+
+
+Column 
+-----------------------------------------------------------------------
+
+### Station Usage
+
+```{r}
+
+station_df <- trips_df %>%
+  select(start_station_name, end_station_name) %>%
+  rename(Start = start_station_name, End = end_station_name) %>%
+  pivot_longer(cols = Start:End, names_to = 'Usage', values_to = 'Station')
+
+station_gg <- ggplot(station_df,
+                     aes(x = Station, fill = Usage)) +
+                     geom_bar(position = 'stack') +
+                     theme_bw() +
+                     ylab('Trips') +
+                     xlab('') +
+                     theme(axis.text.x = element_text(angle = 45, hjust = 1))
+                
+ggplotly(station_gg)     
+
+```
+
+
+
+#----------- htmlwidgets interactive map-------------------
+
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(tidyverse)
+library(leaflet)
+
+stations_df <- read_csv('https://assets.datacamp.com/production/course_6355/datasets/stations_data.csv')
+```
+
+
+Overview
+===================================== 
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Stations Map
+
+```{r}
+leaflet() %>%
+  addTiles() %>%
+  addMarkers(lat = stations_df$latitude, lng = stations_df$longitude)
+```
+
+
+
+# --------------
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(tidyverse)
+library(leaflet)
+
+stations_df <- read_csv('https://assets.datacamp.com/production/course_6355/datasets/stations_data.csv')
+```
+
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Stations Map
+
+```{r}
+leaflet(stations_df) %>%
+  addTiles() %>%
+  addMarkers()
+```
+
+
+# ----------- guages adding and other settings -----------------------------------
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(tidyverse)
+library(lubridate)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6355/datasets/sanfran_bikeshare_joined_oneday.csv')
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Origins
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Median Trip Length
+
+
+### % Short Trips
+
+```{r}
+
+num_trips <- nrow(trips_df)
+short_trips <- sum(trips_df$duration_sec < 600) # under 10 min
+pct_short_trips <- round(100 * short_trips / num_trips, 0)
+
+gauge(value = pct_short_trips,
+      min = 0,
+      max = 100,
+      sectors = gaugeSectors(success = c(67, 100),
+                             warning = c(33, 66),
+                             danger = c(0, 32)))
+
+```
+
+### Trips by Start Time
+
+
+
+
+# ----------Tables -----------------
+
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+library(knitr)
+library(DT)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6355/datasets/sanfran_bikeshare_joined_oneday.csv')
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Station Usage
+
+```{r}
+
+station_trips_df <- trips_df %>%
+  select(start_station_name, end_station_name) %>%
+  pivot_longer(cols = start_station_name:end_station_name, names_to = 'Type', values_to = 'Station') %>%
+  group_by(Station, Type) %>%
+  summarize(n_trips = n()) %>% 
+  mutate(Type = ifelse(Type == 'start_station_name', 'Trip Starts', 'Trip Ends')) %>%
+  pivot_wider(names_from = 'Type', values_from = 'n_trips') %>%
+  replace_na(list(`Trip Starts` = 0, `Trip Ends` = 0)) %>%
+  mutate(Gap = `Trip Ends` - `Trip Starts`)
+
+kable(station_trips_df)
+
+```
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Median Trip Length
+
+
+### % Short Trips
+
+
+### Trips by Start Time
+
+
+
+# ----Tables interactive options -------------------------------------------
+
+
+
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+library(knitr)
+library(DT)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6355/datasets/sanfran_bikeshare_joined_oneday.csv')
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Station Usage
+
+```{r}
+
+station_trips_df <- trips_df %>%
+  select(start_station_name, end_station_name) %>%
+  pivot_longer(cols = start_station_name:end_station_name, names_to = 'Type', values_to = 'Station') %>%
+  group_by(Station, Type) %>%
+  summarize(n_trips = n()) %>% 
+  mutate(Type = ifelse(Type == 'start_station_name', 'Trip Starts', 'Trip Ends')) %>%
+  pivot_wider(names_from = 'Type', values_from = 'n_trips') %>%
+  replace_na(list(`Trip Starts` = 0, `Trip Ends` = 0)) %>%
+  mutate(Gap = `Trip Ends` - `Trip Starts`)
+
+datatable(station_trips_df)
+
+```
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Median Trip Length
+
+
+### % Short Trips
+
+
+### Trips by Start Time
+
+
+
+# -------------------------------------------------------------------------------
+
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+library(knitr)
+library(DT)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6355/datasets/sanfran_bikeshare_joined_oneday.csv')
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Station Usage
+
+```{r}
+
+station_trips_df <- trips_df %>%
+  select(start_station_name, end_station_name) %>%
+  pivot_longer(cols = start_station_name:end_station_name, names_to = 'Type', values_to = 'Station') %>%
+  group_by(Station, Type) %>%
+  summarize(n_trips = n()) %>% 
+  mutate(Type = ifelse(Type == 'start_station_name', 'Trip Starts', 'Trip Ends')) %>%
+  pivot_wider(names_from = 'Type', values_from = 'n_trips') %>%
+  replace_na(list(`Trip Starts` = 0, `Trip Ends` = 0)) %>%
+  mutate(Gap = `Trip Ends` - `Trip Starts`)
+
+datatable(
+  station_trips_df, rownames = FALSE,
+  extensions = 'Buttons', options = list(
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+  )
+)
+
+
+```
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Median Trip Length
+
+
+### % Short Trips
+
+
+### Trips by Start Time
+
+
+
+# -------------Story telling and adding text -----------------------------------
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(leaflet)
+library(DT)
+library(tidyverse)
+library(lubridate)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/repositories/1448/datasets/1f12031000b09ad096880bceb61f6ca2fd95e2eb/sanfran_bikeshare_joined_oneday.csv')
+```
+
+Column 
+-----------------------------------------------------------------------
+### Origins
+
+```{r}
+
+trips_df %>%
+  rename(latitude = start_latitude,
+         longitude = start_longitude) %>%
+  group_by(start_station_id, latitude, longitude) %>%
+  count() %>%
+  leaflet() %>%
+  addTiles() %>%
+  addCircles(radius = ~n)
+
+```
+
+> Source: Bay Area Bike Share
+
+
+
+
+
+
+
+
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6355/datasets/sanfran_bikeshare_joined_oneday.csv')
+```
+
+Overview
+====================================================
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Origins
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Median Trip Length
+
+```{r}
+
+median_min <- median(trips_df$duration_sec / 60) %>% round(digits = 1)
+
+valueBox(median_min, 
+         caption = 'Median Trip Duration (Minutes)', 
+         icon = 'fa-clock-o',
+         href = '#trip-duration')
+
+
+```
+
+### % Short Trips
+
+
+### Trips by Start Time
+
+
+Trip Duration
+====================================================
+
+### Trip Durations
+
+```{r}
+
+duration_plot <- trips_df %>%
+  mutate(`Trip Duration (min)` = duration_sec / 60) %>%
+  ggplot(aes(x = `Trip Duration (min)`)) +
+  theme_bw() +
+  geom_histogram(binwidth = 1) +
+  ylab('# Trips')
+
+duration_plot %>% ggplotly()
+
+```
+
+
+
+# ----------------- Storyboards ------------------------------------------------
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    storyboard: true
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(leaflet)
+library(DT)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/repositories/1448/datasets/1f12031000b09ad096880bceb61f6ca2fd95e2eb/sanfran_bikeshare_joined_oneday.csv')
+```
+
+### Most bikes are used only a few times, but a few are used a lot
+
+```{r}
+
+trips_per_bike_df <- trips_df %>%
+  group_by(bike_number) %>%
+  summarize(n_trips = n()) %>%
+  arrange(desc(n_trips)) 
+
+bike_plot <- trips_per_bike_df %>%
+  ggplot(aes(x = n_trips)) +
+  geom_histogram(binwidth = 1) +
+  ylab('') +
+  xlab('Trips per bike') 
+
+ggplotly(bike_plot)
+
+```
+
+### Where did the most used bike go?
+
+```{r}
+
+trips_df %>%
+  filter(bike_number == trips_per_bike_df$bike_number[1]) %>%
+  rename(latitude = start_latitude,
+         longitude = start_longitude) %>%
+  group_by(start_station_id, latitude, longitude) %>%
+  count() %>%
+  leaflet() %>%
+  addTiles() %>%
+  addMarkers()
+
+```
+
+
+
+-----------------------------------
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    storyboard: true
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(leaflet)
+library(DT)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/repositories/1448/datasets/1f12031000b09ad096880bceb61f6ca2fd95e2eb/sanfran_bikeshare_joined_oneday.csv')
+```
+
+### Most bikes are used only a few times, but a few are used a lot
+
+```{r}
+
+trips_per_bike_df <- trips_df %>%
+  group_by(bike_number) %>%
+  summarize(n_trips = n()) %>%
+  arrange(desc(n_trips)) 
+
+bike_plot <- trips_per_bike_df %>%
+  ggplot(aes(x = n_trips)) +
+  geom_histogram(binwidth = 1) +
+  ylab('') +
+  xlab('Trips per bike') 
+
+ggplotly(bike_plot)
+
+```
+
+### Where did the most used bike go?
+
+```{r}
+
+most_used_bike_df <- trips_df %>%
+  filter(bike_number == trips_per_bike_df$bike_number[1])
+
+most_used_bike_df %>%
+  rename(latitude = start_latitude,
+         longitude = start_longitude) %>%
+  group_by(start_station_id, latitude, longitude) %>%
+  count() %>%
+  leaflet() %>%
+  addTiles() %>%
+  addMarkers()
+
+```
+
+***
+
+* Bike `r most_used_bike_df$bike_number[1]` made its first trip from `r most_used_bike_df$start_station_name[1]` and ended its day at `r most_used_bike_df$end_station_name[nrow(most_used_bike_df)]`.
+* Its longest trip was `r max(most_used_bike_df$duration_sec)/60` minutes long.
+
+
+# -------------------- Incorporating Shiny into FlexDashboards ---------------------
+# adding interactivity on the static flexdashboard 
+
+# ---------------making the all figures interactive ------------------
+
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(leaflet)
+library(DT)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6961/datasets/sanfran_bikeshare_joined_oneday.csv') %>%
+  mutate(duration_min = duration_sec / 60,
+         start_hour = hour(start_date)) %>%
+  filter(duration_min <= 8 * 60) # remove trips longer than 8 hours as suspicious data quality
+
+```
+
+Column {data-width=200 .sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+sliderInput("start_slider", 
+            label = "Select trip start times to display (hour of day):",
+            min = 0, 
+            max = 24, 
+            value = c(7,10), 
+            step = 1, 
+            dragRange = TRUE)
+
+show_trips_df <- reactive({
+
+  trips_df %>%
+    filter(start_hour >= input$start_slider[1] &
+             start_hour <= input$start_slider[2])
+
+})
+
+```
+
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+
+### Origins
+
+```{r}
+
+renderLeaflet({
+  
+  show_trips_df() %>%
+    rename(latitude = start_latitude,
+           longitude = start_longitude) %>%
+    group_by(start_station_id, latitude, longitude) %>%
+    count() %>%
+    leaflet() %>%
+    addTiles() %>%
+    addCircles(radius = ~n)
+  
+})
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Total Trips
+
+```{r}
+
+renderValueBox({
+  valueBox(prettyNum(show_trips_df() %>%
+                       nrow(), big.mark = ','), 
+           icon = 'fa-bicycle')
+})
+
+
+```
+
+### Trips by Duration
+
+```{r}
+
+renderPlot({
+    show_trips_df() %>%
+        ggplot(aes(x = duration_min)) +
+        theme_bw() +
+        xlab('Trip Duration (min) \n') +
+        ylab('# trips') +
+        geom_histogram() 
+})
+
+
+```
+
+
+# ---------------------------------------
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(leaflet)
+library(DT)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+options(shiny.sanitize.errors = FALSE)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6961/datasets/sanfran_bikeshare_joined_oneday.csv') %>%
+  mutate(duration_min = duration_sec / 60)
+
+sf_bbox <- c(-123.0137, 37.6040, -122.3549, 37.8324)
+sj_bbox <- c(-122.0457, 37.1255, -121.5891, 37.4692)
+
+trips_df <- trips_df %>%
+  mutate(city = ifelse((start_latitude >= sf_bbox[2] & start_latitude <= sf_bbox[4]) &
+                         (start_longitude >= sf_bbox[1] & start_longitude <= sf_bbox[3]),
+                       'San Francisco', ifelse((start_latitude >= sj_bbox[2] & start_latitude <= sj_bbox[4]) &
+                                                 (start_longitude >= sj_bbox[1] & start_longitude <= sj_bbox[3]),
+                                               'San Jose', 'Other')))
+```
+
+Column {data-width=200 .sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+
+radioButtons("origin_location", label = "Select trip origin region to display:", 
+             choices = c('All' = 'all', 'San Francisco' = 'sf', 'San Jose' = 'sj'), 
+             selected = c('all'))
+
+trips <- reactive({
+
+  if(input$origin_location == 'sf') {
+    trips_df <- trips_df %>% filter(city == 'San Francisco')
+  } else if(input$origin_location == 'sj') {
+    trips_df <- trips_df %>% filter(city == 'San Jose')
+  }
+
+  trips_df
+
+})
+
+```
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+
+### Origins
+
+```{r}
+
+renderLeaflet({
+  trips() %>%
+    rename(latitude = start_latitude,
+           longitude = start_longitude) %>%
+    group_by(start_station_id, latitude, longitude) %>%
+    count() %>%
+    leaflet() %>%
+    addTiles() %>%
+    addCircles(radius = ~n)
+})
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Total Trips
+
+```{r}
+
+renderValueBox({
+  valueBox(prettyNum(trips() %>%
+                       nrow(), big.mark = ','), 
+           icon = 'fa-bicycle')
+})
+
+
+# valueBox(prettyNum(nrow(trips_df), big.mark = ','), icon = 'fa-bicycle')
+```
+
+### Trips by Start Time
+
+```{r}
+
+renderPlot({trips() %>%
+    mutate(hour = hour(start_date)) %>%
+    group_by(hour) %>%
+    summarize(`Trips Started` = n()) %>%
+    ggplot(aes(x = hour, y = `Trips Started`)) +
+    theme_bw() +
+    ylab('Trips Started \n') +
+    geom_bar(stat = 'identity') 
+})
+
+
+```
+
+
+# ------------Interecative shiny flexdashboard ---------------------------------------
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(leaflet)
+library(DT)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6961/datasets/sanfran_bikeshare_joined_oneday.csv') %>%
+  mutate(duration_min = duration_sec / 60,
+         start_hour = hour(start_date)) %>%
+  filter(duration_min <= 8 * 60) # remove trips longer than 8 hours as suspicious data quality
+
+```
+
+Column {data-width=200 .sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+sliderInput("start_slider", 
+            label = "Select trip start times to display (hour of day):",
+            min = 0, 
+            max = 24, 
+            value = c(7,10), 
+            step = 1)
+```
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+
+### Origins
+
+```{r}
+
+  trips_df %>%
+    rename(latitude = start_latitude,
+           longitude = start_longitude) %>%
+    group_by(start_station_id, latitude, longitude) %>%
+    count() %>%
+    leaflet() %>%
+    addTiles() %>%
+    addCircles(radius = ~n)
+
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Total Trips
+
+```{r}
+
+valueBox(prettyNum(trips_df %>%
+                     nrow(), big.mark = ','), 
+         icon = 'fa-bicycle')
+
+
+```
+
+### Trips by Duration
+
+```{r}
+
+trips_df %>%
+    ggplot(aes(x = duration_min)) +
+    theme_bw() +
+    xlab('Trip Duration (min) \n') +
+    ylab('# trips') +
+    geom_histogram() 
+
+```
+
+
+
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(leaflet)
+library(DT)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6961/datasets/sanfran_bikeshare_joined_oneday.csv') %>%
+  mutate(duration_min = duration_sec / 60,
+         start_hour = hour(start_date)) %>%
+  filter(duration_min <= 8 * 60) # remove trips longer than 8 hours as suspicious data quality
+
+```
+
+
+
+Column {data-width=200 .sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+
+sliderInput("start_slider", 
+            label = "Select trip start times to display (hour of day):",
+            min = 0, 
+            max = 24, 
+            value = c(7,10), 
+            step = 1)
+
+show_trips_df <- reactive({
+  trips_df %>%
+    filter(start_hour >= input$start_slider[1] &
+             start_hour <= input$start_slider[2])
+})
+
+```
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+### Origins
+
+```{r}
+
+  trips_df %>%
+    rename(latitude = start_latitude,
+           longitude = start_longitude) %>%
+    group_by(start_station_id, latitude, longitude) %>%
+    count() %>%
+    leaflet() %>%
+    addTiles() %>%
+    addCircles(radius = ~n)
+
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Total Trips
+
+```{r}
+
+valueBox(prettyNum(trips_df %>%
+                     nrow(), big.mark = ','), 
+         icon = 'fa-bicycle')
+
+
+```
+
+### Trips by Duration
+
+```{r}
+
+trips_df %>%
+    ggplot(aes(x = duration_min)) +
+    theme_bw() +
+    xlab('Trip Duration (min) \n') +
+    ylab('# trips') +
+    geom_histogram() 
+
+```
+
+
+
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(leaflet)
+library(DT)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/course_6961/datasets/sanfran_bikeshare_joined_oneday.csv') %>%
+  mutate(duration_min = duration_sec / 60,
+         start_hour = hour(start_date)) %>%
+  filter(duration_min <= 8 * 60) # remove trips longer than 8 hours as suspicious data quality
+
+```
+
+
+
+Column {data-width=200 .sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+
+sliderInput("start_slider", 
+            label = "Select trip start times to display (hour of day):",
+            min = 0, 
+            max = 24, 
+            value = c(7,10), 
+            step = 1)
+
+show_trips_df <- reactive({
+
+  trips_df %>%
+    filter(start_hour >= input$start_slider[1] &
+             start_hour <= input$start_slider[2])
+
+})
+
+```
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+### Origins
+
+```{r}
+
+renderLeaflet({
+  
+  show_trips_df() %>%
+    rename(latitude = start_latitude,
+           longitude = start_longitude) %>%
+    group_by(start_station_id, latitude, longitude) %>%
+    count() %>%
+    leaflet() %>%
+    addTiles() %>%
+    addCircles(radius = ~n)
+  
+})
+
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Total Trips
+
+```{r}
+
+valueBox(prettyNum(trips_df %>%
+                     nrow(), big.mark = ','), 
+         icon = 'fa-bicycle')
+
+
+```
+
+### Trips by Duration
+
+```{r}
+
+trips_df %>%
+    ggplot(aes(x = duration_min)) +
+    theme_bw() +
+    xlab('Trip Duration (min) \n') +
+    ylab('# trips') +
+    geom_histogram() 
+
+```
+
+
+# -----------Apply Input to Single Chart ---------------------------------------
+
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(leaflet)
+library(DT)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/repositories/1448/datasets/1f12031000b09ad096880bceb61f6ca2fd95e2eb/sanfran_bikeshare_joined_oneday.csv') %>%
+  mutate(duration_min = duration_sec / 60)
+
+```
+
+Column {data-width=200 .sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+sliderInput("duration_slider", label = "Select maximum trip duration to display (in minutes):",
+            min = 0, max = 120, value = 15, step = 5, dragRange = TRUE)
+
+sliderInput("duration_bin", label = "Select # of minutes to bin trip durations:",
+           min = 1, max = 15, value = 1, step = 1)
+
+show_trips_df <- reactive({
+
+  trips_df %>%
+    filter(duration_sec <= input$duration_slider * 60)
+
+})
+```
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+
+### Origins
+
+```{r}
+
+renderLeaflet({
+  show_trips_df() %>%
+    rename(latitude = start_latitude,
+           longitude = start_longitude) %>%
+    group_by(start_station_id, latitude, longitude) %>%
+    count() %>%
+    leaflet() %>%
+    addTiles() %>%
+    addCircles(radius = ~n)
+})
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Total Trips
+
+```{r}
+
+renderValueBox({
+  valueBox(prettyNum(show_trips_df() %>%
+                       nrow(), big.mark = ','), 
+           icon = 'fa-bicycle')
+})
+
+```
+
+### Trips by Start Time
+
+```{r}
+
+renderPlot({show_trips_df() %>%
+    mutate(hour = hour(start_date)) %>%
+    group_by(hour) %>%
+    summarize(`Trips Started` = n()) %>%
+    ggplot(aes(x = hour, y = `Trips Started`)) +
+    theme_bw() +
+    ylab('Trips Started \n') +
+    geom_bar(stat = 'identity') 
+})
+
+
+```
+
+### Trip Durations
+
+```{r}
+
+renderPlot({show_trips_df() %>%
+  mutate(`Trip Duration (min)` = duration_sec / 60) %>%
+  ggplot(aes(x = `Trip Duration (min)`)) +
+  theme_bw() +
+  geom_histogram(binwidth = input$duration_bin) +
+  ylab('# Trips')
+})
+
+
+```
+
+
+
+# -----------------------------------------------------------------------------------
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(leaflet)
+library(DT)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/repositories/1448/datasets/1f12031000b09ad096880bceb61f6ca2fd95e2eb/sanfran_bikeshare_joined_oneday.csv') %>%
+  mutate(duration_min = duration_sec / 60) %>%
+  filter(duration_min <= 8 * 60) # filtering out trips over 8 hours as suspicious
+
+```
+
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+
+### Origins
+
+```{r}
+
+renderLeaflet({
+  trips_df %>%
+    rename(latitude = start_latitude,
+           longitude = start_longitude) %>%
+    group_by(start_station_id, latitude, longitude) %>%
+    count() %>%
+    leaflet() %>%
+    addTiles() %>%
+    addCircles(radius = ~n)
+})
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Total Trips
+
+```{r}
+
+renderValueBox({
+  valueBox(prettyNum(trips_df %>%
+                       nrow(), big.mark = ','), 
+           icon = 'fa-bicycle')
+})
+
+```
+
+
+### Trip Durations
+
+```{r}
+
+sliderInput("duration_bin", label = "Select # of minutes to bin trip durations:",
+min = 1, max = 15, value = 5, step = 1)
+
+renderPlot({trips_df %>%
+  mutate(`Trip Duration (min)` = duration_sec / 60) %>%
+  ggplot(aes(x = `Trip Duration (min)`)) +
+  theme_bw() +
+  geom_histogram(binwidth = input$duration_bin) +
+  ylab('# Trips')
+})
+
+
+```
+
+
+---
+title: "Bike Shares Daily"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+library(flexdashboard)
+library(readr)
+library(leaflet)
+library(DT)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+trips_df <- read_csv('https://assets.datacamp.com/production/repositories/1448/datasets/1f12031000b09ad096880bceb61f6ca2fd95e2eb/sanfran_bikeshare_joined_oneday.csv') %>%
+  mutate(duration_min = duration_sec / 60)
+```
+
+Sidebar {.sidebar}
+====================
+
+```{r}
+
+sliderInput("duration_slider", label = "Select maximum trip duration to display (in minutes):",
+            min = 0, max = 120, value = 15, step = 5, dragRange = TRUE)
+
+sliderInput("duration_bin", label = "Select # of minutes to bin trip durations:",
+           min = 1, max = 15, value = 1, step = 1)
+
+show_trips_df <- reactive({
+
+  trips_df %>%
+    filter(duration_sec <= input$duration_slider * 60)
+
+})
+```
+
+Overview
+====================
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+
+### Origins
+
+```{r}
+
+renderLeaflet({
+  show_trips_df() %>%
+    rename(latitude = start_latitude,
+           longitude = start_longitude) %>%
+    group_by(start_station_id, latitude, longitude) %>%
+    count() %>%
+    leaflet() %>%
+    addTiles() %>%
+    addCircles(radius = ~n)
+})
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Total Trips
+
+```{r}
+
+renderValueBox({
+  valueBox(prettyNum(show_trips_df() %>%
+                       nrow(), big.mark = ','), 
+           icon = 'fa-bicycle')
+})
+
+```
+
+### Trips by Start Time
+
+```{r}
+
+renderPlot({show_trips_df() %>%
+    mutate(hour = hour(start_date)) %>%
+    group_by(hour) %>%
+    summarize(`Trips Started` = n()) %>%
+    ggplot(aes(x = hour, y = `Trips Started`)) +
+    theme_bw() +
+    ylab('Trips Started \n') +
+    geom_bar(stat = 'identity') 
+})
+
+
+```
+
+Duration
+====================
+
+### Trip Durations
+
+```{r}
+
+renderPlot({show_trips_df() %>%
+  mutate(`Trip Duration (min)` = duration_sec / 60) %>%
+  ggplot(aes(x = `Trip Duration (min)`)) +
+  theme_bw() +
+  geom_histogram(binwidth = input$duration_bin) +
+  ylab('# Trips')
+})
+
+
+```

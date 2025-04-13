@@ -1,0 +1,690 @@
+---
+title: "Data manipulation: dplyr"
+description: |
+  Basic data cleaning and management in dplyr
+author: 
+  - name: Yalemzewod Gelaw
+    url: https://yalemzewodgelaw.com/
+    orcid: 0000-0002-5338-586 
+date: 2024-06-12
+image: "media/pc.png"
+slug: beginner’s guide
+categories: [RStudio, Data management]
+toc: true
+toc-depth: 4
+number-sections: false
+highlight-style: github
+format:
+  html:
+    self-contained: true
+    code-fold: false
+    code-summary: "Show the code"
+    code-tools: true
+    theme: united 
+knitr: 
+ opts_knit: 
+   warning: false
+   message: false
+editor: visual
+---
+
+# Data management in dplyr
+
+In this section, I will discuss about data management process, basic data cleaning and management in `dplyr`.
+
+Data can be defined as a collection of facts that can be used to draw a conclusion, make predictions and assist decision making.
+
+Public health data may originate from various sources including:
+
+| Routine disease surveillance system such as hospital medical records (individual level information) or aggregated data captured through a reporting software - District Health Information Software (DHIS2)
+| Research and surveys - Demographic Health Survey, Malaria Indicator Survey, Service Provision Assessment
+| Administrative - logistic data
+| Vital statistics - birth, death and marriage
+| Literature and reports
+
+-   ::: {.callout-tip appearance="simple"}
+    -   `ls()` - Lists all active files.
+
+    -   `rm(list = ls())` - Cleans your environment.
+
+    -   `Ctrl + L` - Cleans the console.
+
+    -   Assign function: `Alt + -`.
+
+    -   `Ctrl + 1` - shortcut to move to source pane
+
+    -   `Ctrl + 2` - shortcut to move to console pane
+    :::
+
+## Step-by-Step Guide
+
+### 1. Setting Up Your Environment
+
+Check your working directory using:
+
+```{r, woringdir, echo=TRUE}
+getwd()
+```
+
+### 2. Load the necessary packages
+
+For data management, you will use the `tidyverse` package. Install the package if you haven't installed before using *install.packages("*tidyverse"*)* function.
+
+```{r,load_package, echo=TRUE, eval=TRUE}
+# Install necessary packages if not already installed
+if (!requireNamespace("tidyverse", quietly = TRUE)) install.packages("tidyverse")
+if (!requireNamespace("janitor", quietly = TRUE)) install.packages("janitor")
+if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
+if (!requireNamespace("lubridate", quietly = TRUE)) install.packages("lubridate")
+if (!requireNamespace("haven", quietly = TRUE)) install.packages("haven")
+
+# Load the packages
+library(tidyverse)   # To read Excel files
+library(janitor)     # To clean column names
+library(dplyr)       # For data wrangling
+library(lubridate)   # Date functions
+library(haven)       # To read stata file
+
+```
+
+### 3. Reading and Cleaning Data
+
+Read the malaria data: The data I used for this post is a sample of routine malaria surveillance data from **Ethiopia**. The data you're collected monthly and collated at the district level (third administrative system) and stored in csv file format.
+
+```{r,path, echo=TRUE, eval=TRUE}
+malaria_data <- read_csv("C:/Users/User/Documents/R_training/Tutorial_R/data/routine_data.csv")
+
+```
+
+**Safeguard your data: Make a backup of the data**:
+
+When dealing with large datasets, it’s essential to take precautions. Imagine your data disappearing into the digital abyss—scary, right? To prevent that, always make a backup. Think of it as a safety net for your precious data. Whether you’re crunching numbers, visualizing trends, or building models, follow this golden rule: **Back it up before you hack it up**🔒!
+
+```{r, backup, echo=TRUE, eval=TRUE}
+routine_data <- malaria_data #Make a backup 
+```
+
+### 3. Skim the data
+
+Knowing your dataset well from file size to data types is another crucial step prior to hands-on data cleaning.
+
+To look at how the data looks like either by clicking on it in the global environment window or by typing the command `View(routine_data)` which opens up a window displaying the data.
+
+```{r, view, echo=TRUE, eval=TRUE}
+View(routine_data)
+```
+
+![*View data*](C:/Users/User/Documents/R_training/Tutorial_R/R_Tutorial/scripts/tutorials/2024-06-10-Data-manipulation-in-dplyr/media/data_view.png)
+
+Alternatively, you may just want to look at a few rows. You can do this by using the `head()` function, which shows us the first six rows of data and `tail()` function, which shows us the lass six rows of the data.
+
+```{r, top,echo=TRUE, eval=TRUE}
+head(routine_data) # top six rows
+```
+
+```{r, bottom,echo=TRUE,eval=FALSE}
+tail(routine_data) # bottom six rows
+```
+
+To understand the structure of the data you can use the `str()` command or `glimpse().`
+
+```{r, attributes,echo=TRUE, eval=TRUE}
+glimpse(routine_data)
+```
+
+From the above results, you can see that the data frame consists of 11,604 observations (rows) and 14 variables (columns). Each variable's name and data type is also listed. The dataset can be read as `data.frame`, `lists`, `tbl_df`, `spatial`. Please refer my previous post on [**Mastering RStudio: A Beginner’s Guide**](https://yalemzewodgelaw.com/tutorials/2022-05-24-introduction-to-rstudio/) for detail note about data structure in R and supplementary [YouTube videos .](https://youtu.be/7MyAEQO3nqM?si=K0l2q8kU2hYaMUiW)
+
+```{r, class,echo=TRUE,eval=FALSE}
+class(routine_data)
+```
+
+For a data frame you can select the nth row, or the nth column using square brackets (note where the comma is paced).
+
+```{r, second_col,echo=TRUE,eval=FALSE}
+head(routine_data[,2], 5) #second column
+```
+
+```{r, first_row,echo=TRUE,eval=FALSE}
+routine_data[1,] #firts row
+```
+
+To view all variable names with the `names()`, `colnames()` , and `variable.names()` function.
+
+```{r, col_list,echo=TRUE,eval=FALSE}
+colnames(routine_data)
+names(routine_data)
+variable.names(routine_data)
+```
+
+To view variable with the position number:
+
+```{r,col_position,echo=TRUE,eval=FALSE}
+names(routine_data)[5]
+```
+
+There are several incorrect data types in this dataset, but let's continue using the "date" variable to demonstrate how to identify and update these errors:
+
+```{r, data_type,echo=TRUE,eval=FALSE}
+typeof(routine_data$date)
+```
+
+"Character" is returned but the variable should in fact be a date. you can use the `as.Date` function of `lubridate` package to change the data type accordingly:
+
+```{r, as_date, echo=TRUE, eval=TRUE}
+ #as.Date(routine_data$date) # to date
+```
+
+![*Convert to date from a character variable*](C:/Users/User/Documents/R_training/Tutorial_R/R_Tutorial/scripts/tutorials/2024-06-10-Data-manipulation-in-dplyr/media/date.png)
+
+String inconsistencies: This includes typos, capitalization errors, misplaced punctuation, or similar character data errors that might interfere with data analysis. Take for instance your "Year" column. As you can see there are wrongly entered year 21 and 3021.
+
+```{r, unique_year,echo=TRUE, eval=TRUE}
+unique(routine_data$Year)
+```
+
+**Outliers**:
+
+The dataset has 8 continuous variables: *test_performed*, *confirmed_all, confirmed_u5, confirmed_5_14, confirmed_15, population, pop_5, pop_514, pop_15*. To get a feeling for how the data is distributed, you can plot histograms for case variables:
+
+Under 5 confirmed malaria cases:
+
+```{r, hist_u5, echo=TRUE, eval=TRUE}
+hist(routine_data$confirmed_u5)
+```
+
+All age confirmed malaria cases:
+
+```{r, hist_all,echo=TRUE, eval=TRUE}
+hist(routine_data$confirmed_all)
+```
+
+Data cleaning is one of the most important steps for analysis! No matter where your data comes from, always be sure the completeness, consistency, and trustworthiness of data before analyzing and utilizing the data. Once you get cleaned and organized, you can perform analysis to find clear and objective answers to any data question.
+
+## Data manipulation in dplyr()
+
+In this section, you’ll explore the powerful dplyr package, part of the tidyverse ecosystem. Tidyverse is a collection of R packages for data science, designed to make cleaning and analyses of data easy and tidy.
+
+**dplyr** streamlines your data wrangling process, making it easier to work with data frames.
+
+Let’s dive into the key functions:
+
+::: callout-note
+***select()***: Choose specific variables (columns) from a data frame based on their names.
+
+***rename()***: Transform and rename variables.
+
+***filter()***: Select rows that meet specific criteria.
+
+***mutate()***: Create new variables by applying functions to existing ones.
+
+***group_by()***: Perform operations by group.
+
+***summarize()***: Aggregate data.
+
+***arrange()***: Order rows based on a specified column.
+
+***distinct()***: Remove duplicate rows based on specified columns.
+:::
+
+These functions simplify common data manipulation tasks.
+
+#### The Pipe Operator `%>% OR "|>"`
+
+This operator allows you to chain commands together. Instead of creating intermediate variables, you can directly link functions.
+
+You use `pipes` when you creating intermediate variables to link commands together . For example, the idea is instead of using :
+
+```{r,select, echo=TRUE, eval=TRUE}
+select(routine_data, Year)
+```
+
+Building blocks that code readability and reproducibility, making your data workflows more efficient.
+
+```{r, pipe, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  select(Year)
+```
+
+#### Selecting Columns:
+
+The `select()` function in R allows you to choose specific columns (variables) from a data frame. Specify the data frame name as the first argument, followed by the column names you want to keep. Example:
+
+```{r, colu, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  select(region,zone,district, 
+       Month,date,confirmed_all,test_performed)
+```
+
+To select columns that have common prefix or suffix, you can use the `start_witth()` `contains()`, or `end_with()` functions. Example to subset columns that captured confirmed cases
+
+```{r, start, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  select(
+    starts_with("confirmed")
+  )
+```
+
+contains()
+
+```{r, contain, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  select(
+    contains("confirmed")
+  )
+```
+
+end_with()
+
+```{r, end, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  select(
+    ends_with("5")
+  )
+```
+
+#### Filtering Rows:
+
+The `filter()` function helps you retain only the rows (observations) that meet specific conditions.
+
+For instance: To select rows for the *Tigray* region:
+
+```{r, filter, echo=TRUE, eval=TRUE}
+routine_data%>% 
+  filter(region == "Tigray")
+```
+
+To choose rows with more than 500 confirmed cases in children under 5:
+
+```{r, pick, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  filter(confirmed_u5 > 500)
+```
+
+To filter by multiple conditions (e.g., regions “Amhara” or “Afar” with at least 500 confirmed cases in children under 5 ):
+
+```{r, filter_m, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  filter(
+    (region == "Amhara" | region == "Afar") &
+    (confirmed_u5 >= 500))
+```
+
+| *Identifying Erroneous Data:*
+
+You can use `filter()` to spot inconsistencies. For instance, find rows where the number of confirmed cases exceeds the number tested:
+
+```{r, inco, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  filter(confirmed_all > test_performed)
+```
+
+#### Renaming variable
+
+There may be situations when you want to rename variables in a data frame to make it more comprehensive and easier to process. The `rename()` function allows you to change column names in a data frame. It’s useful for making variable names more descriptive. you pass to this function the data frame you are working with, *`rename(dataframe, new_name = old_name).`*
+
+Example, if you wanted to change the variable "confirmed_u5" to "conf_u5", and to overwrite the object "routine_data" with this you would simply write:
+
+```{r, rename, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  rename(conf_u5 =confirmed_u5)
+```
+
+#### Creating new variable
+
+The ***`mutate()`*** function lets you add new variables or modify existing ones. You use the **`=`** sign to assign new values . For example, to calculate the incidence rate of malaria in children under five per 1000 population using the formula `(confirmed_u5 / pop_5) * 1000`, you could write:
+
+```{r,prop, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  mutate(incidence_rate = (confirmed_u5/pop_5)*1000)
+```
+
+#### Altering existing variable
+
+Suppose you noticed an error in the region name, where “South Western Ethiopia” was mistakenly entered as “Sou.” You can correct this using an **`ifelse`** statement within **`mutate()`**. The condition is **`region == "Sou"`**, and if it’s met, you replace the value with “South Western Ethiopia.” Otherwise, you keep the original value.
+
+Here’s how you can do it:
+
+```{r, alter, eval=FALSE, echo=TRUE}
+routine_data %>% 
+  mutate(region = 
+           ifelse(region == "Sou",
+                  "South Western Ethiopia",
+                  region)) 
+```
+
+This will update the **`region`** variable in your data frame.
+
+| Using `case_when` for Multiple Changes:
+
+If you need to make multiple changes based on different conditions, consider using **`case_when`** instead of `ifelse`. Let’s say there are other errors in the district names. You can correct them simultaneously using **`case_when`**.
+
+There is a district name mismatch between district names in **DHIS2** and names in ***shapefile***. For this you will use the `task_data.csv`
+
+```{r, multiple_change, eval=TRUE, echo=TRUE}
+task_data <- read_csv("C:/Users/User/Documents/R_training/Tutorial_R/data/task_data.csv") %>% 
+  data.frame() %>% 
+ mutate(district_new = case_when(
+ district == "Addis Ketema" ~ "Addis Ketema (AA)",
+ district == "Nifas Silk Lafto" ~ "Nefas Silk",
+TRUE ~ district)) %>% 
+  select(-district) %>% 
+  rename("district" = "district_new") #rename to district
+```
+
+![district_old vs district_new](C:/Users/User/Documents/R_training/Tutorial_R/R_Tutorial/scripts/tutorials/2024-06-10-Data-manipulation-in-dplyr/media/name_change.png)
+
+Change the Year column
+
+```{r,match_year, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  mutate(Year = 
+    case_when(Year == 21 ~ 2021,
+              Year == 3021 ~ 2021,
+              .default = Year
+              )
+  ) 
+unique(routine_data$Year)
+```
+
+#### Removes duplicate rows
+
+The distinct() function removes duplicate rows from a data frame based on specified columns. You can use it to keep only unique rows or to remove duplicates based on specific columns.
+
+To remove duplicate rows based on the district column, you can use:
+
+```{r, keep_all, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  distinct(district,
+           .keep_all = TRUE)
+
+```
+
+```{r, count, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  select(district) %>% 
+  distinct() %>% 
+  count()
+```
+
+#### **Null values**
+
+*Null values* are treated differently in R. They appear as `NA` in the dataset, so you may expect the following code to work for filtering data to remove all missing values for the number of people tested for malaria:
+
+```{r, na, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  filter(test_performed =NA)
+```
+
+However, this does not work as R has a special way of dealing with missing values. You use the `is.na()` command, which checks fo `NA` values. As with the equals command, if you want the reverse of this, i.e. "not NA" you can use `!is.na()`. So the code to remove missing values would be:
+
+```{r,is_na, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  filter(!is.na(test_performed))
+```
+
+Another method for removing missing data in tidyverse is using the `drop_na()` function from *{tidyr}* package. As with the filter function this takes the dataset as the first argument, followed by the variables for which you are dropping NA values.
+
+```{r, drop_na, echo=TRUE, eval=TRUE}
+routine_data_no_NA <- routine_data %>% 
+  drop_na(test_performed)
+```
+
+#### Sorting and reordering data frames
+
+Sorting a data frame by rows and reordering columns is easy in R. To sort a data frame by a column you use the function `arrange()`. You specify the data frame and the column to sort by, and the default is to sort in `ascending` order. To sort in a descending order you can specify this with `desc().` Additionally, you can sort by multiple variables, and sorting will be undertaken in the order they appear in the command.
+
+```{r,sort, eval=FALSE, echo=TRUE}
+routine_data %>% 
+  arrange(confirmed_u5) # the default is asce
+
+```
+
+```{r, desc, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  arrange(desc(confirmed_u5))
+```
+
+How to change the order of the column
+
+The `relocate()` function is part of the `dplyr` package in R. It allows you to change the order of columns in a data frame. You can specify where a particular column should be placed relative to other columns using the `.before` and `.after` arguments.
+
+The basic syntax of the relocate() function as follows:
+
+`relocate(data, column_name, .before = target_column, .after = target_column)`
+
+-   **`data`**: The data frame containing the columns.
+
+-   **`column_name`**: The name of the column you want to move.
+
+-   **`.before`**: Specify the column name before which the target column should be placed.
+
+-   **`.after`**: Specify the column name after which the target column should be placed.
+
+**Example:** Suppose we have a data frame called **`task_data`** with columns: “zone,” “district,” and “Month.” We want to move the “district” column after the “zone” column and before the “Month” column.
+
+```{r, locate, echo=TRUE, eval=TRUE}
+task_data %>% 
+  relocate(district, .before =  Month) %>% 
+  head()
+```
+
+#### Summarizing data
+
+There are some useful functions in tidyverse to help you summarize the data. The first of these is the `count()` function. This is a quick function which will allow you to quickly count the occurrences of an item within a dataset.
+
+```{r, summary, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  filter(region=="Amhara") %>% 
+  group_by(region) %>% 
+  count(district)
+```
+
+By including multiple variables in the command you can count the numbers of times that combination of variables appears.
+
+```{r, n, echo=TRUE, eval=TRUE}
+routine_data %>% 
+  count(region, Month)
+```
+
+If you want to summarize numerical variables you can use the function `summarise().` This is used in conjunction with other mathematical functions such as `sum()`, `mean()`, `median()`, `max()`..
+
+```{r, na_rm, echo=TRUE, eval=TRUE}
+task_data %>% 
+  summarise(total_case = sum(female, male, na.rm = TRUE),
+          mean_cases = mean(conf_5),
+          median_cases = median(conf_5),
+          max_cases = max(conf_5),
+          sd_case = sd(conf_5))
+```
+
+you can combine the `summarise()` function with `group_by()` to summarize the data by different variables in the dataset. To calculate the total number of people tested and positive for malaria in each district in our dataset, you would group by this variable first and then summarize the data. Grouping is not restricted to one variable, if you wanted to group the data by location and date then both variables would be included in the command. When you use the `sum()` function , `na.rm = T` logic required if the column has NULL values
+
+```{r, sum, echo=TRUE, eval=TRUE}
+routine_data %>%  group_by(region) %>% 
+summarise(total_test = sum(test_performed),
+
+          total_positive = sum(confirmed_all),
+
+          total_u5 = sum(confirmed_u5),
+
+          total_514 = sum(confirmed_5_14),
+
+          total_ov15 = sum(confirmed_15)) 
+```
+
+**Subsetting data**
+
+-   Subsetting refers to extracting a portion of your data based on specific conditions. In this case, we want to focus on data related to the Amhara region.
+
+-   The **`select()`** function allows us to choose specific columns from our data frame. We’ll keep the following columns: “region,” “zone,” “district,” “test_performed,” “confirmed_all,” and “confirmed_u5.”
+
+-   We’ll group our data by the “zone” column using the **`group_by()`** function. This means that subsequent calculations will be performed within each zone.
+
+-   The **`summarise()`** function computes summary statistics for each group (in this case, each zone).
+
+```{r, subset, echo=TRUE, eval=TRUE}
+routine_data %>% 
+ select(region, zone, district,
+         test_performed,confirmed_all,confirmed_u5) %>%  
+         filter(region%in%"Amhara") %>%  
+  group_by(zone) %>% 
+  summarise(total_positive = sum(confirmed_all, na.rm = T),
+          total_u5 = sum(confirmed_u5, na.rm = T),
+          prop_u5 = round((total_u5/total_positive)*100,2))
+```
+
+Know to take everything you have learnt to import and clean the routine dataset. If you want your output to contain the total numbers of malaria tests performed and the number of confirmed cases in children under 5, people over 5, and calculate a total for all ages. you want to have the total by district level and Year in the dataset. This is how you would go about building the code.
+
+```{r,all, echo=TRUE, eval=TRUE}
+clean_routine_data <- routine_data %>% 
+  # subset
+dplyr::select(region, zone, district, Month, Year,
+         test_performed,confirmed_all,
+         confirmed_u5,confirmed_5_14,confirmed_15) %>% 
+  drop_na(test_performed,confirmed_all,
+         confirmed_u5,confirmed_5_14,confirmed_15) %>% 
+  # filter rows if test number is less than confirmed
+  filter(test_performed>confirmed_all) %>% 
+  # update region
+  mutate(region = case_when(
+    region =='Sou'~'South Western Ethiopia',
+             TRUE~region),
+    # update year
+             year = case_when(Year == 3021 ~ 2021,
+                          Year == 21 ~ 2021,
+                          TRUE ~ Year),
+    # to date
+         date_reported = make_date(year = Year,
+                                   month = Month), 
+         conf_ov5 = confirmed_5_14+confirmed_15) %>%
+  # aggregate by region, zone, and district
+  group_by(region, zone, district) %>% 
+  summarise(test_total = sum(test_performed),
+            conf_total = sum(confirmed_all),
+            conf_u5 = sum(confirmed_u5),
+           conf_ov5 = sum(conf_ov5)) %>% 
+  # deselect test_total, -conf_total 
+  dplyr::select(-test_total, -conf_total)
+# top six
+head(clean_routine_data)
+```
+
+### Advanced manipulation of data frames
+
+In this section you introducing some more advanced functions for data manipulation. you will be using the "clean_routine_data" dataset you just created.
+
+#### Reshaping data
+
+Reshaping or pivoting data is an important part of data cleaning and manipulation. Tidyverse has introduced the functions `pivot_wider()` and `pivot_longer()` to improve the ease of reshaping data in R.
+
+`pivot_longer()` takes a wide dataset and converts it into a long one, decreasing the number of columns and increasing the number of rows. Datasets are often created in a wide format, but for analysis a long format is often preferable, especially for data visualization.
+
+To reshape the data long you need to pass the argument the columns which are being pivoted, a name for the new column to identify the columns being reshaped, and a name for the values of the columns being reshaped. you can also combine this with helper functions such as `starts_with()` to help identify the columns to reshape. For this demonstration you will use the "clean_data_routine.csv". To reshape the dataset into long format :
+
+```{r, to_long, echo=TRUE, eval=TRUE}
+clean_routine_data <- read_csv("C:/Users/User/Documents/R_training/Tutorial_R/data/clean_routine_data.csv")
+
+clean_long <- clean_routine_data %>% 
+pivot_longer(cols = starts_with("conf"),
+               names_to = "age_group",
+               names_pattern = "conf_(.*)",
+               values_to = 'cases') 
+
+```
+
+to convert the `clean_long` dataset to wide forma:\
+
+```{r, to_wide, eval=FALSE, echo=TRUE}
+clean_long |> 
+  pivot_wider(id_cols = c('region',
+                          'zone',
+                          'district'),
+              names_from = age_group,
+              values_from = cases)
+```
+
+There are a range of different options in this function to help pivot the data in the cleanest way possible. To see these you can look at the vignette by typing the code `vignette("pivot")`.
+
+#### Joining data frames
+
+In R you can easily join two data frames together based on one, or multiple variables. There are the following options for joining two data frames, `x`and `y`:
+
+-   `inner_join()`: includes all rows that appear in both x and y
+
+-   `left_join()`: includes all rows in x
+
+-   `right_join()`: includes all rows in y
+
+-   `full_join()`: includes all rows in x or y
+
+-   `anti_join()`: return all rows in one data frame that do not have matching values in another data frame
+
+To run the command you need to pass it the data frames you wish to join and the variable(s) you wish to join by. If there are matching variables in the data frames these will be detected and you do not need to specify them.
+
+If you have two data frames with varying numbers of rows, you can investigate the outcomes of using the different join commands. Firstly, you create two data frames of different lengths, `tested`, and `confirmed`, then look at what the commands and outcomes would be.
+
+![Data frame Joining in dplyr](C:/Users/User/Documents/R_training/Tutorial_R/R_Tutorial/scripts/tutorials/2024-06-10-Data-manipulation-in-dplyr/media/join.png)
+
+```{r, join,echo=TRUE,eval=TRUE}
+tested <- data.frame(year = c(2015, 2016, 2017, 2018, 2019, 2020),
+
+                     tested = c(1981, 1992, 2611, 2433, 2291, 2311))
+
+positive <- data.frame(year = c(2013, 2014, 2015, 2016, 2017, 2018),
+
+                     positive = c(1164, 1391, 981, 871, 1211, 998))
+
+# Command written in full
+
+inner_join(tested, positive, by = "year") 
+
+# Using the pipe operator
+
+tested %>% 
+  inner_join(positive)      # Keeps only matching records
+
+ left_join(tested, positive)     # Keeps all records for the first dataset
+
+tested %>% right_join(positive)    # Keeps all records for the second dataset 
+
+tested %>% full_join(positive)   # Keeps all records from both datasets
+
+anti_join(tested, positive) #Keep all rows in tested that do not have matching values in positive dataset
+```
+
+You can also join datasets which have different names for the variables you wish to join on. Say if the variable for "year" in the positive dataset was "yr", you could use the command:
+
+```{r,join_cmd, echo=TRUE, eval=TRUE}
+positive <- data.frame(yr = c(2013, 2014, 2015, 2016, 2017, 2018),
+                     positive = c(1164, 1391, 981, 871, 1211, 998))
+tested %>% inner_join(positive,
+                      by= c("year"="yr"))
+```
+
+#### Writing data
+
+Once you have finished working on your data there are multiple ways you can save your work in R.
+
+One of the basic ones is to save your dataset as a csv. This is useful as it can easily be opened in other software (such as excel). You may also want to save your data as a *Stata (dta)* file.
+
+R has some specific formats you can use to store data, these are `.RDS` and `.RData`. RDS files store one R object, whilst *RData* can store multiple objects.
+
+Here, you can select which format you want to save the data in and save the `malaria_incidence_2021` data frame you created in this module.
+
+Similarly to importing data, you can use the base R functions of \`write.csv()\`, or preferably the `tidyverse` option if `write_csv()`.
+
+```{r, write_data, echo=TRUE, eval=TRUE}
+#write_csv(clean_routine_data, "clean_routine_data.csv")
+
+#write_dta(clean_routine_data, "outputs/clean_routine_data.dta")
+
+#saveRDS(clean_routine_data, "outputs/clean_routine_data.RDS")
+```
+
+# Reference
+
+1.  [MAP training material](https://malaria-atlas-project.gitlab.io/intro-to-spatial-analysis-for-infectious-diseases/02_datahandling.html) 
+
+2.  [R for Reproducible Scientific Analysis](https://umn-dash.github.io/r-novice-gapminder/aio.html)
+
+3.  [Dataframe Manipulation with dplyr](https://r-crash-course.github.io/13-dplyr/)

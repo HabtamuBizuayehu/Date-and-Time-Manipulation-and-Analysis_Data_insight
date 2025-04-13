@@ -1,0 +1,25 @@
+## the cars folder contains last weeks shiny app (bit.ly/TidyX_Ep160)
+## Convert your shiny app into all the assets for running the app 
+## in the browser
+install.packages("shinylive")
+library(shinylive)
+
+setwd("C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes")
+dir.exists("Shiny_Live_App")
+
+shinylive::export(
+  appdir = "Shiny_Live_App",
+  destdir = "docs"
+)
+
+# Open RStudio or Command Prompt / Git Bash, and run:
+setwd ("C:/Users/User/Desktop/Materials_ Course and proposals/VIP collection for Syntax code or project titles/R codes")
+
+
+## with development version of httpuv, run shinylive app locally
+## remotes::install_github("rstudio/httpuv")
+httpuv::runStaticServer(
+  dir = "docs", 
+  port = 8888
+)
+
