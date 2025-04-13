@@ -6,9 +6,9 @@ Welcome to this R-based project demonstrating how to manipulate, clean, and anal
 
 ## 📷 Sample Visual Output
 
-![Date-Time Plot](https://github.com/HabtamuBizuayehu/Date-and-Time-Manipulation-and-Analysis_Data_insight/raw/main/Date-and-Time-Data-analysis_files/figure-html/unnamed-chunk-20-1.png)
-![Date-Time Plot](https://github.com/HabtamuBizuayehu/Date-and-Time-Manipulation-and-Analysis_Data_insight/raw/main/Date-and-Time-Data-analysis_files/figure-html/unnamed-chunk-16-1.png)
-![Date-Time Plot](https://github.com/HabtamuBizuayehu/Date-and-Time-Manipulation-and-Analysis_Data_insight/raw/main/Date-and-Time-Data-analysis_files/figure-html/unnamed-chunk-18-1.png)
+![Date-Time Plot](https://github.com/HabtamuBizuayehu/Date-and-Time-Manipulation-and-Analysis_Data_insight/raw/main/docs/Date-and-Time-Data-analysis_files/figure-html/unnamed-chunk-20-1.png)
+![Date-Time Plot](https://github.com/HabtamuBizuayehu/Date-and-Time-Manipulation-and-Analysis_Data_insight/raw/main/docs//Date-and-Time-Data-analysis_files/figure-html/unnamed-chunk-16-1.png)
+![Date-Time Plot](https://github.com/HabtamuBizuayehu/Date-and-Time-Manipulation-and-Analysis_Data_insight/raw/main/docs/Date-and-Time-Data-analysis_files/figure-html/unnamed-chunk-18-1.png)
 ---
 
 ## 🌐 Full Report
