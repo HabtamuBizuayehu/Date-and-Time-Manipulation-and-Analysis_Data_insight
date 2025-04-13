@@ -11,9 +11,9 @@ Welcome to this R-based project demonstrating how to manipulate, clean, and anal
 ![Date-Time Plot](https://github.com/HabtamuBizuayehu/Date-and-Time-Manipulation-and-Analysis_Data_insight/raw/main/Date-and-Time-Data-analysis_files/figure-html/unnamed-chunk-18-1.png)
 ---
 
-## 🌐 Full HTML Report
+## 🌐 Full Report
 
-📄 [Click here to view or download the full HTML report](https://github.com/HabtamuBizuayehu/Date-and-Time-Manipulation-and-Analysis_Data_insight/raw/main/Date%20and%20Time%20Data%20analysis.html)
+📄 [View or download the full Report Here](https://habtamubizuayehu.github.io/Date-and-Time-Manipulation-and-Analysis_Data_insight/Date_and_Time_Data_analysis.html)
 
 ---
 
